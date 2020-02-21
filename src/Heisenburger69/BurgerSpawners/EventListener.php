@@ -108,6 +108,40 @@ class EventListener implements Listener
 
 
     /**
+     * @param BlockPlaceEvent $event
+     * @Priority MONITOR
+     */
+    public function onBreakSpawner(BlockBreakEvent $event): void
+    {
+        $player = $event->getPlayer();
+        $item = $event->getItem();
+        $block = $event->getBlock();
+        $tiles = $block->getLevel()->getChunkTiles($block->getX() >> 4, $block->getZ() >> 4);
+
+        $disabledWorlds = ConfigManager::getArray("spawner-stacking-disabled-worlds");
+        if (is_array($disabledWorlds)) {
+            if (in_array($player->getLevel()->getFolderName(), $disabledWorlds)) {
+                return;
+            }
+        }
+
+        foreach ($tiles as $tile) {
+            if (!$tile instanceof MobSpawnerTile) {
+                return;
+            }
+            if (ConfigManager::getToggle("allow-spawner-stacking")) {
+              if ($item->getNamedTag()->hasTag(MobSpawnerTile::ENTITY_ID, IntTag::class) && $item->getNamedTagEntry("EntityID")->getValue() === $tile->getEntityId()) {
+              
+                $tile->setCount($tile->getCount() - 1);
+                    $player->getInventory()->setItemInHand($item->setCount($item->getCount() + 1));
+                    $event->setCancelled();
+                }
+            }
+        }
+    }
+
+    
+    /**
      * @param PlayerInteractEvent $event
      */
     public function onInteractSpawner(PlayerInteractEvent $event): void
