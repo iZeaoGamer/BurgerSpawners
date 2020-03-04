@@ -38,6 +38,7 @@ class Main extends PluginBase
     public function onEnable(): void
     {
         self::$instance = $this;
+        $this->spawners = new Config($this->getDataFolder() . "spawners.yml", Config::YAML);
         $this->saveDefaultConfig();
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
         $this->getServer()->getCommandMap()->register("BurgerSpawners", new SpawnerCommand($this));
@@ -51,8 +52,6 @@ class Main extends PluginBase
         if (ConfigManager::getToggle("register-mobs")) {
             EntityManager::init();
         }
-
-        UpdateNotifier::checkUpdate($this, $this->getDescription()->getName(), $this->getDescription()->getVersion());
     }
 
     /**
