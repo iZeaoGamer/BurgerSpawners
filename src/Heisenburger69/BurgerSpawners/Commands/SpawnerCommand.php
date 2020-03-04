@@ -14,6 +14,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as C;
 use ReflectionException;
+use onebone\economyapi\EconomyAPI;
 
 class SpawnerCommand extends PluginCommand
 {
@@ -33,6 +34,7 @@ class SpawnerCommand extends PluginCommand
         $this->setDescription("Burger Spawners Base Command");
         $this->setPermission("burgerspawners.command.spawner");
         $this->plugin = $plugin;
+        $this->economy = EconomyAPI::getInstance();
     }
 
     /**
@@ -59,6 +61,7 @@ class SpawnerCommand extends PluginCommand
             $sender->sendMessage(Main::PREFIX . C::GOLD . "List of Available Spawners:\n".C::YELLOW.$list);
             return true;
         }
+        
 
         $entities = $this->plugin->getRegisteredEntities();
         $entityName = strtolower($args[0]);
@@ -66,7 +69,10 @@ class SpawnerCommand extends PluginCommand
             $sender->sendMessage(Main::PREFIX . C::RED . "No registered entities!");
             return false;
         }
-
+        if($this->economy->myMoney($sender->getName() < $this->plugin->spawners->get($entityName)){
+            $sender->sendMessage(C::colorize("&cYou do not have enough money to buy the &a" . $entityName . " &cspawner. This spawner costs $" . $this->plugin->spawners->get($entityName) . "!"));
+            return false;
+        }
         $entities = array_change_key_case($entities, CASE_LOWER);
         if (!array_key_exists($entityName, $entities)) {
             $sender->sendMessage(Main::PREFIX . C::RED . "Given entity " . C::DARK_AQUA . $entityName . C::RED . " not registered!");
